@@ -1,32 +1,26 @@
-# שלב 1: Build
+# שלב 1: התקנת התלויות ובניית הפרויקט
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# התקנת תלות
 COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && corepack prepare pnpm@10.5.2 --activate && pnpm install
+RUN npm install -g pnpm && pnpm install
 
-# העתקת שאר הקבצים ובנייה
 COPY . .
 RUN pnpm build
 
-# שלב 2: הרצת פרודקשן
-FROM node:18-alpine
+# שלב 2: הרצת האפליקציה בלבד
+FROM node:18-alpine AS runner
 
 WORKDIR /app
 
-# התקנת pnpm להרצה
-RUN corepack enable && corepack prepare pnpm@10.5.2 --activate
+ENV NODE_ENV=production
+ENV PORT=3000
 
-# העתקת תוצרים מוכנים בלבד
-COPY --from=builder /app/.next .next
-COPY --from=builder /app/public public
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/node_modules node_modules
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
 CMD ["pnpm", "start"]
