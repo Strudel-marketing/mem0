@@ -13,15 +13,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# DEBUG: הדפס את הקונפיגים
-RUN echo "🧾 next.config.mjs:" && cat next.config.mjs || echo "not found"
-RUN echo "📁 All files:" && ls -R
+# וידוא שהקובץ הנכון מועתק
+RUN echo "🧾 next.config.mjs:" && cat next.config.mjs || echo "❌ not found"
+RUN pnpm build
 
-# הרץ את הבנייה
-RUN pnpm build && find .next/standalone -name "*.js" || echo "❌ not found"
-
-# DEBUG: ודא שהקובץ קיים
-RUN echo "📁 Contents of .next/standalone:" && ls -R .next/standalone || echo "❌ Not created"
+# הדפסת כל הקבצים שנבנו
+RUN echo "📂 ALL FILES:" && find .next -type f
 
 FROM base AS runner
 WORKDIR /app
@@ -33,5 +30,6 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
+# ננסה להריץ main.js אם הוא קיים
 EXPOSE 3000
-CMD ["node", "index.js"]
+CMD ["node", "main.js"]
