@@ -18,7 +18,7 @@ RUN echo "🧾 next.config.mjs:" && cat next.config.mjs || echo "not found"
 RUN echo "📁 All files:" && ls -R
 
 # הרץ את הבנייה
-RUN pnpm build
+RUN pnpm build && find .next/standalone -name "*.js"
 
 # DEBUG: ודא שהקובץ קיים
 RUN echo "📁 Contents of .next/standalone:" && ls -R .next/standalone || echo "❌ Not created"
