@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mem0-api:
+    build: ./openmemory/api
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - QDRANT_HOST=${QDRANT_HOST}
+      - QDRANT_PORT=${QDRANT_PORT}
+      - PORT=8000
+      - MEM0_ADMIN_EMAIL=${MEM0_ADMIN_EMAIL}
+      - MEM0_ADMIN_NAME=${MEM0_ADMIN_NAME}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mem0-api.rule=Host(`mem0-api.strudel.marketing`)"
+      - "traefik.http.routers.mem0-api.entrypoints=websecure"
+      - "traefik.http.routers.mem0-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mem0-api.loadbalancer.server.port=8000"
+    networks:
+      - mem0
+
+  mem0-ui:
+    build: ./openmemory/ui
+    environment:
+      - NEXT_PUBLIC_MEM0_API_URL=${NEXT_PUBLIC_MEM0_API_URL}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mem0-ui.rule=Host(`mem0.strudel.marketing`)"
+      - "traefik.http.routers.mem0-ui.entrypoints=websecure"
+      - "traefik.http.routers.mem0-ui.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mem0-ui.loadbalancer.server.port=3000"
+    networks:
+      - mem0
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mem0
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    networks:
+      - mem0
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+volumes:
+  postgres_data:
+  qdrant_data:
+
+networks:
+  mem0:
