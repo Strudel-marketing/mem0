@@ -20,7 +20,7 @@ services:
       - "traefik.http.routers.mem0-api.rule=Host(`mem0-api.strudel.marketing`)"
       - "traefik.http.routers.mem0-api.entrypoints=websecure"
       - "traefik.http.routers.mem0-api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.mem0-api.loadbalancer.server.port=8000"
+      - "traefik.http.services.mem0-api.loadbalancer.server.port=8765"
     networks:
       - mem0
 
